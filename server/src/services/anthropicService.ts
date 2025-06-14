@@ -33,8 +33,8 @@ export class AnthropicService {
       );
 
       const response = await this.client.messages.create({
-        model: "claude-3-sonnet-20240229",
-        max_tokens: 1024,
+        model: "claude-4-sonnet-20250514",
+        max_tokens: 1000,
         messages: anthropicMessages,
         system: this.buildSystemPrompt(toolCall, toolResult),
       });
