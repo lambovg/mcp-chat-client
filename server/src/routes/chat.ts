@@ -124,11 +124,13 @@ export function createChatRouter(
     });
   });
 
-  router.post("/chat/welcome-message", (req: Request, res: Response) => {
+  router.post("/chat/welcome-message", async (req: Request, res: Response) => {
+    const toolsResult = await mcpService.listTools();
+
     const response: ChatResponse = {
       message: {
         id: uuidv4(),
-        content: "Hello! I'm your AI assistant. How can I help you today?",
+        content: `Hello! I'm your AI assistant. You can the following tools: [${toolsResult.map(({ name }) => name)}]`,
         role: "assistant",
         timestamp: new Date(),
       },
@@ -140,4 +142,3 @@ export function createChatRouter(
 
   return router;
 }
-
