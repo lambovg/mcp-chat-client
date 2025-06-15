@@ -1,6 +1,10 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { ChatMessage, MCPToolCall, MCPToolResult } from "../types";
 import winston from "winston";
+import {
+  MessageParam,
+  Tool,
+} from "@anthropic-ai/sdk/resources/messages/messages";
 
 export class AnthropicService {
   private client: Anthropic;
@@ -109,10 +113,7 @@ respond in a friendly, conversational way that acknowledges the successful ping-
   ): string {
     // For ping/pong, we can generate a simple response without calling Claude
     if (toolCall.name === "ping_pong" && !toolResult.isError) {
-      const result =
-        typeof toolResult.content === "string"
-          ? toolResult.content
-          : JSON.parse(toolResult.content[0]?.text || "{}");
+      const result = toolResult.content;
 
       if (result.response === "pong") {
         return "🏓 Pong! The MCP server responded successfully to your ping.";
@@ -128,5 +129,24 @@ respond in a friendly, conversational way that acknowledges the successful ping-
 
     return `Tool ${toolCall.name} returned: ${JSON.stringify(toolResult.content)}`;
   }
-}
 
+  async processQuery(tools: Tool[], messages: ChatMessage[]): Promise<string> {
+    // Build the messages array for Anthropic
+    const anthropicMessages = this.buildAnthropicMessages(messages);
+
+    const response = await this.client.messages.create({
+      model: "claude-4-sonnet-20250514",
+      max_tokens: 1000,
+      messages: anthropicMessages,
+      tools,
+    });
+
+    // Extract text content from the response
+    const textContent = response.content
+      .filter((block) => block.type === "text")
+      .map((block) => block.text)
+      .join("\n");
+
+    return textContent;
+  }
+}
