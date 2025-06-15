@@ -1,6 +1,6 @@
-import { useEffect, useCallback, useRef } from 'react';
-import { wsService } from '../services/websocket';
-import { WS_EVENTS } from '../utils/constants';
+import { useEffect, useCallback, useRef } from "react";
+import { wsService } from "../services/websocket";
+import { WS_EVENTS } from "../utils/constants";
 
 interface UseWebSocketOptions {
   onMessage?: (data: any) => void;
@@ -11,14 +11,19 @@ interface UseWebSocketOptions {
 
 export const useWebSocket = (options: UseWebSocketOptions = {}) => {
   const optionsRef = useRef(options);
+  const hasConnectedRef = useRef(false);
   optionsRef.current = options;
 
   useEffect(() => {
-    wsService.connect();
+    if (!hasConnectedRef.current) {
+      wsService.connect();
+      hasConnectedRef.current = true;
+    }
 
     const handleMessage = (data: any) => optionsRef.current.onMessage?.(data);
     const handleError = (error: any) => optionsRef.current.onError?.(error);
-    const handleStatus = (status: any) => optionsRef.current.onStatusChange?.(status);
+    const handleStatus = (status: any) =>
+      optionsRef.current.onStatusChange?.(status);
     const handleToolCall = (data: any) => optionsRef.current.onToolCall?.(data);
 
     wsService.on(WS_EVENTS.MESSAGE, handleMessage);
@@ -34,12 +39,16 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
     };
   }, []);
 
-  const sendMessage = useCallback((message: string, conversationId?: string) => {
-    wsService.sendMessage(message, conversationId);
-  }, []);
+  const sendMessage = useCallback(
+    (message: string, conversationId?: string) => {
+      wsService.sendMessage(message, conversationId);
+    },
+    [],
+  );
 
   return {
     sendMessage,
     isConnected: wsService.isConnected(),
   };
 };
+
