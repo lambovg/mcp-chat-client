@@ -109,14 +109,12 @@ respond in a friendly, conversational way that acknowledges the successful ping-
   ): string {
     // For ping/pong, we can generate a simple response without calling Claude
     if (toolCall.name === "ping_pong" && !toolResult.isError) {
-      const result =
-        typeof toolResult.content === "string"
-          ? toolResult.content
-          : JSON.parse(toolResult.content[0]?.text || "{}");
+      const result = toolResult.content;
 
       if (result.response === "pong") {
         return "🏓 Pong! The MCP server responded successfully to your ping.";
       }
+
       return result.response || "Received response from MCP server.";
     }
 
@@ -128,4 +126,3 @@ respond in a friendly, conversational way that acknowledges the successful ping-
     return `Tool ${toolCall.name} returned: ${JSON.stringify(toolResult.content)}`;
   }
 }
-
