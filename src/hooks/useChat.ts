@@ -4,14 +4,14 @@ import { Message, ChatState } from "../types";
 import { chatApi } from "../services/api";
 import { useWebSocket } from "./useWebSocket";
 
-const createWelcomeMessage = (): Message => ({
-  id: uuidv4(),
-  content: "Hello! I'm your AI assistant. How can I help you today?",
-  role: "assistant",
-  timestamp: new Date(),
-});
-
 export const useChat = () => {
+  const createWelcomeMessage = (): Message => ({
+    id: uuidv4(),
+    content: "Hello! I'm your AI assistant. How can I help you today?",
+    role: "assistant",
+    timestamp: new Date(),
+  });
+
   const [state, setState] = useState<ChatState>({
     messages: [createWelcomeMessage()],
     isLoading: false,
