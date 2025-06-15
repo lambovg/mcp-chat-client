@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
-import { ChatRequest, ChatResponse, ConversationStore } from "../types";
+import { ChatResponse, ConversationStore } from "../types";
 import { AnthropicService } from "../services/anthropicService";
 import { MCPService } from "../services/mcpService";
 import winston from "winston";
