@@ -1,19 +1,12 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Message, ChatState } from "../types";
 import { chatApi } from "../services/api";
 import { useWebSocket } from "./useWebSocket";
 
 export const useChat = () => {
-  const createWelcomeMessage = (): Message => ({
-    id: uuidv4(),
-    content: "Hello! I'm your AI assistant. How can I help you today?",
-    role: "assistant",
-    timestamp: new Date(),
-  });
-
   const [state, setState] = useState<ChatState>({
-    messages: [createWelcomeMessage()],
+    messages: [],
     isLoading: false,
     error: null,
     conversationId: null,
@@ -21,6 +14,45 @@ export const useChat = () => {
   });
 
   const [isInitialState, setIsInitialState] = useState(true);
+
+  const createWelcomeMessage = useCallback(
+    (content: string): Message => ({
+      id: uuidv4(),
+      content,
+      role: "assistant",
+      timestamp: new Date(),
+    }),
+    [],
+  );
+
+  // Fetch welcome message on mount
+  useEffect(() => {
+    const fetchWelcomeMessage = async () => {
+      try {
+        const welcomeResponse = await chatApi.welcomeMessage();
+        const welcomeMessage = createWelcomeMessage(
+          welcomeResponse.message.content,
+        );
+
+        setState((prev) => ({
+          ...prev,
+          messages: [welcomeMessage],
+        }));
+      } catch (error) {
+        console.error("Failed to fetch welcome message:", error);
+        // Optionally set a fallback welcome message
+        const fallbackMessage = createWelcomeMessage(
+          "Hello! How can I help you today?",
+        );
+        setState((prev) => ({
+          ...prev,
+          messages: [fallbackMessage],
+        }));
+      }
+    };
+
+    fetchWelcomeMessage();
+  }, [createWelcomeMessage]);
 
   const { sendMessage: wsSendMessage, isConnected } = useWebSocket({
     onMessage: (data: Message) => {
